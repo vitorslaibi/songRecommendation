@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Song Recommendations</title>
+    <title>Recommendations</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
         body {
@@ -40,33 +40,29 @@
         .btn:hover {
             background: #1ed760;
         }
-        .recommendations {
+        ul {
             list-style-type: none;
             padding: 0;
         }
-        .recommendations li {
+        li {
             background: #f9f9f9;
             margin: 10px 0;
             padding: 10px;
             border-radius: 5px;
             text-align: left;
         }
-        .recommendations li strong {
-            color: #1DB954;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Song Recommendations</h1>
+        <h1>Recommended Songs</h1>
         
         <!-- Back to Home Button -->
         <a href="{{ url_for('index') }}" class="btn">Back to Home</a>
         
         <!-- Display Recommendations -->
         {% if recommendations %}
-            <h2>Based on your preferences, we recommend:</h2>
-            <ul class="recommendations">
+            <ul>
                 {% for song in recommendations %}
                     <li>
                         <strong>{{ song['name'] }}</strong> by {{ song['artist'] }}<br>

@@ -23,7 +23,7 @@ sp_oauth = SpotifyOAuth(
     client_id=CLIENT_ID,
     client_secret=CLIENT_SECRET,
     redirect_uri=REDIRECT_URI,
-    scope="user-library-read user-top-read user-read-private user-read-email",
+    scope="user-library-read user-top-read user-read-private user-read-email",  # Add required scopes
     cache_handler=cache_handler
 )
 
@@ -154,7 +154,7 @@ def recommend():
     except spotipy.exceptions.SpotifyException as e:
         print(f"Spotify API Error: {e}")
         return f"Spotify API Error: {e}", 403
-
+    
 # Run the app
 if __name__ == "__main__":
     app.run(debug=True)

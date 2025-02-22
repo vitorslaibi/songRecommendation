@@ -5,41 +5,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spotify Song Recommender</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #1DB954;
+        }
+        .btn {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background: #1DB954;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background: #1ed760;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #f9f9f9;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .track-info {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Spotify Song Recommender</h1>
         
+        <!-- Login/Logout Button -->
         {% if not logged_in %}
             <a href="{{ url_for('login') }}" class="btn">Login with Spotify</a>
         {% else %}
             <a href="{{ url_for('logout') }}" class="btn">Logout</a>
-            
+        {% endif %}
+        
+        <!-- Fetch Top Tracks -->
+        {% if logged_in %}
             <h2>Your Top Tracks</h2>
             <a href="{{ url_for('top_tracks') }}" class="btn">Fetch Top Tracks</a>
+            
             {% if top_tracks %}
                 <ul>
                     {% for track in top_tracks %}
-                        <li>{{ track['name'] }} by {{ track['artists'][0]['name'] }}</li>
+                        <li>
+                            <span class="track-info">{{ track['name'] }}</span> by {{ track['artists'][0]['name'] }}
+                        </li>
                     {% endfor %}
                 </ul>
             {% endif %}
-            
+        {% endif %}
+        
+        <!-- Recommendation Form -->
+        {% if logged_in %}
             <h2>Get Recommendations</h2>
             <form action="{{ url_for('recommend') }}" method="POST">
                 <label for="track_id">Enter a Track ID:</label>
                 <input type="text" id="track_id" name="track_id" required>
                 <button type="submit" class="btn">Recommend</button>
             </form>
-            
-            {% if recommendations %}
-                <h3>Recommended Songs:</h3>
-                <ul>
-                    {% for song in recommendations %}
-                        <li>{{ song['name'] }} by {{ song['artist'] }} (Similarity: {{ song['similarity'] | round(2) }})</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
         {% endif %}
     </div>
 </body>
