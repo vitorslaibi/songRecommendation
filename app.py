@@ -2,18 +2,18 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth, CacheFileHandler
 import os
-from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+import time
 
 # Flask app setup
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Required for session management
-cache_handler = CacheFileHandler(cache_path=".spotify_token_cache")
+app.secret_key = os.urandom(24)
 
 # Spotify API credentials
 CLIENT_ID = "7b9b560a429140ca8ad82a9c2b6bf5bc"
 CLIENT_SECRET = "dcd42166b8d046dd86da1381b66adbc6"
-REDIRECT_URI = "http://localhost:5000/callback"  # Must match Spotify Developer Dashboard
+REDIRECT_URI = "http://localhost:5000/callback"
 
 # Set up cache handler
 cache_handler = CacheFileHandler(cache_path=".spotify_token_cache")
@@ -103,6 +103,14 @@ def recommend():
         return redirect(url_for("login"))
     
     track_id = request.form["track_id"]
+    
+    # Validate track ID
+    try:
+        track_info = sp.track(track_id)
+        if not track_info:
+            return "Invalid track ID. Please try again."
+    except spotipy.exceptions.SpotifyException as e:
+        return f"Invalid track ID: {e}", 400
     
     try:
         # Fetch audio features for the selected track
