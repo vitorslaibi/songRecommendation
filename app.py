@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import spotipy
-from spotipy.oauth2 import SpotifyOAuth
+from spotipy.oauth2 import SpotifyOAuth, CacheFileHandler
 import os
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
@@ -8,6 +8,7 @@ import numpy as np
 # Flask app setup
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # Required for session management
+cache_handler = CacheFileHandler(cache_path=".spotify_token_cache")
 
 # Spotify API credentials
 CLIENT_ID = "7b9b560a429140ca8ad82a9c2b6bf5bc"
@@ -57,7 +58,7 @@ def top_tracks():
     if "token_info" not in session:
         return redirect(url_for("login"))
     
-    sp = spotipy.Spotify(auth=session["token_info"]["access_token"])
+    sp = get_spotify_object()
     top_tracks = sp.current_user_top_tracks(limit=10)["items"]
     return render_template("index.html", top_tracks=top_tracks, logged_in=True)
 
@@ -104,6 +105,20 @@ def recommend():
     # Sort by similarity
     recommendations.sort(key=lambda x: x["similarity"], reverse=True)
     return render_template("index.html", recommendations=recommendations[:5], logged_in=True)
+
+def get_spotify_object():
+    # Check if token is cached
+    token_info = sp_oauth.validate_token(cache_handler.get_cached_token())
+    
+    # If token is expired or invalid, refresh it
+    if not token_info:
+        token_info = sp_oauth.refresh_access_token(cache_handler.get_cached_token()["refresh_token"])
+        cache_handler.save_token_to_cache(token_info)
+    
+    # Return Spotify object with valid token
+    return spotipy.Spotify(auth=token_info["access_token"])
+
+
 
 # Run the app
 if __name__ == "__main__":
