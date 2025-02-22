@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Song Recommendations</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #1DB954;
+        }
+        .btn {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background: #1DB954;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background: #1ed760;
+        }
+        .recommendations {
+            list-style-type: none;
+            padding: 0;
+        }
+        .recommendations li {
+            background: #f9f9f9;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .recommendations li strong {
+            color: #1DB954;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Song Recommendations</h1>
+        
+        <!-- Back to Home Button -->
+        <a href="{{ url_for('index') }}" class="btn">Back to Home</a>
+        
+        <!-- Display Recommendations -->
+        {% if recommendations %}
+            <h2>Based on your preferences, we recommend:</h2>
+            <ul class="recommendations">
+                {% for song in recommendations %}
+                    <li>
+                        <strong>{{ song['name'] }}</strong> by {{ song['artist'] }}<br>
+                        <small>Similarity: {{ song['similarity'] | round(2) }}</small>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No recommendations found. Try selecting a different track!</p>
+        {% endif %}
+    </div>
+</body>
+</html>
