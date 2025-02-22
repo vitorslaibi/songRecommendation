@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Song Recommender</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Spotify Song Recommender</h1>
+        
+        {% if not logged_in %}
+            <a href="{{ url_for('login') }}" class="btn">Login with Spotify</a>
+        {% else %}
+            <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+            
+            <h2>Your Top Tracks</h2>
+            <a href="{{ url_for('top_tracks') }}" class="btn">Fetch Top Tracks</a>
+            {% if top_tracks %}
+                <ul>
+                    {% for track in top_tracks %}
+                        <li>{{ track['name'] }} by {{ track['artists'][0]['name'] }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            
+            <h2>Get Recommendations</h2>
+            <form action="{{ url_for('recommend') }}" method="POST">
+                <label for="track_id">Enter a Track ID:</label>
+                <input type="text" id="track_id" name="track_id" required>
+                <button type="submit" class="btn">Recommend</button>
+            </form>
+            
+            {% if recommendations %}
+                <h3>Recommended Songs:</h3>
+                <ul>
+                    {% for song in recommendations %}
+                        <li>{{ song['name'] }} by {{ song['artist'] }} (Similarity: {{ song['similarity'] | round(2) }})</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -10,8 +10,8 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)  # Required for session management
 
 # Spotify API credentials
-CLIENT_ID = "YOUR_CLIENT_ID"
-CLIENT_SECRET = "YOUR_CLIENT_SECRET"
+CLIENT_ID = "7b9b560a429140ca8ad82a9c2b6bf5bc"
+CLIENT_SECRET = "dcd42166b8d046dd86da1381b66adbc6"
 REDIRECT_URI = "http://localhost:5000/callback"  # Must match Spotify Developer Dashboard
 
 # Spotify OAuth setup
