@@ -23,7 +23,7 @@ sp_oauth = SpotifyOAuth(
     client_id=CLIENT_ID,
     client_secret=CLIENT_SECRET,
     redirect_uri=REDIRECT_URI,
-    scope="user-library-read user-top-read",
+    scope="user-library-read user-top-read user-read-private user-read-email",
     cache_handler=cache_handler
 )
 
@@ -91,6 +91,61 @@ def top_tracks():
     
     top_tracks = sp.current_user_top_tracks(limit=10)["items"]
     return render_template("index.html", top_tracks=top_tracks, logged_in=True)
+
+# Recommend route
+@app.route("/recommend", methods=["POST"])
+def recommend():
+    if "token_info" not in session:
+        return redirect(url_for("login"))
+    
+    sp = get_spotify_object()
+    if not sp:
+        return redirect(url_for("login"))
+    
+    track_id = request.form["track_id"]
+    
+    try:
+        # Fetch audio features for the selected track
+        target_features = sp.audio_features(track_id)[0]
+        if not target_features:
+            return "Failed to fetch audio features. Please try again."
+        
+        target_vector = np.array([
+            target_features["danceability"],
+            target_features["energy"],
+            target_features["valence"],
+            target_features["tempo"]
+        ]).reshape(1, -1)
+        
+        # Fetch user's saved tracks
+        saved_tracks = sp.current_user_saved_tracks(limit=50)["items"]
+        track_ids = [track["track"]["id"] for track in saved_tracks]
+        features_list = sp.audio_features(track_ids)
+        
+        # Compute similarity
+        recommendations = []
+        for i, features in enumerate(features_list):
+            if features:
+                feature_vector = np.array([
+                    features["danceability"],
+                    features["energy"],
+                    features["valence"],
+                    features["tempo"]
+                ]).reshape(1, -1)
+                similarity = cosine_similarity(target_vector, feature_vector)[0][0]
+                recommendations.append({
+                    "name": saved_tracks[i]["track"]["name"],
+                    "artist": saved_tracks[i]["track"]["artists"][0]["name"],
+                    "similarity": similarity
+                })
+        
+        # Sort by similarity
+        recommendations.sort(key=lambda x: x["similarity"], reverse=True)
+        return render_template("recommend.html", recommendations=recommendations[:5], logged_in=True)
+    
+    except spotipy.exceptions.SpotifyException as e:
+        print(f"Spotify API Error: {e}")
+        return f"Spotify API Error: {e}", 403
 
 # Run the app
 if __name__ == "__main__":
