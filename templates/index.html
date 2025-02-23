@@ -1,115 +1,83 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spotify Song Recommender</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 600px;
-            width: 100%;
+            margin: 20px;
         }
         h1 {
             color: #1DB954;
         }
-        .btn {
-            display: inline-block;
-            margin: 10px;
-            padding: 10px 20px;
-            background: #1DB954;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
+        form {
+            margin-bottom: 20px;
         }
-        .btn:hover {
-            background: #1ed760;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            background: #f9f9f9;
-            margin: 10px 0;
+        input[type="text"] {
             padding: 10px;
+            width: 300px;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            text-align: left;
         }
-        .track-info {
-            font-weight: bold;
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #1DB954;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
         .recommendations {
             margin-top: 20px;
         }
+        .track {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .track h3 {
+            margin: 0;
+            color: #1DB954;
+        }
+        .track p {
+            margin: 5px 0;
+        }
+        .track a {
+            color: #1DB954;
+            text-decoration: none;
+        }
+        .track a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Spotify Song Recommender</h1>
-        
-        <!-- Login/Logout Button -->
-        {% if not logged_in %}
-            <a href="{{ url_for('login') }}" class="btn">Login with Spotify</a>
-        {% else %}
-            <a href="{{ url_for('logout') }}" class="btn">Logout</a>
-        {% endif %}
-        
-        <!-- Fetch Top Tracks -->
-        {% if logged_in %}
-            <h2>Your Top Tracks</h2>
-            <a href="{{ url_for('top_tracks') }}" class="btn">Fetch Top Tracks</a>
-            
-            {% if top_tracks %}
-                <ul>
-                    {% for track in top_tracks %}
-                        <li>
-                            <span class="track-info">{{ track['name'] }}</span> by {{ track['artists'][0]['name'] }}
-                        </li>
-                    {% endfor %}
-                </ul>
+    <h1>Spotify Song Recommender</h1>
+    <form action="/recommend" method="POST">
+        <input type="text" name="song_name" placeholder="Enter a song name" required>
+        <input type="submit" value="Get Recommendations">
+    </form>
+
+    {% if recommendations %}
+    <div class="recommendations">
+        <h2>Recommended Songs:</h2>
+        {% for track in recommendations %}
+        <div class="track">
+            <h3>{{ track.name }}</h3>
+            <p><strong>Artist:</strong> {{ track.artist }}</p>
+            <p><strong>Album:</strong> {{ track.album }}</p>
+            {% if track.preview_url %}
+            <p><a href="{{ track.preview_url }}" target="_blank">Preview Song</a></p>
+            {% else %}
+            <p>No preview available</p>
             {% endif %}
-        {% endif %}
-        
-        <!-- Recommendation Form -->
-        {% if logged_in %}
-            <h2>Get Recommendations</h2>
-            <form action="{{ url_for('recommend') }}" method="POST">
-                <label for="track_id">Enter a Track ID:</label>
-                <input type="text" id="track_id" name="track_id" required>
-                <button type="submit" class="btn">Recommend</button>
-            </form>
-            
-            <!-- Display Recommendations -->
-            {% if recommendations %}
-                <div class="recommendations">
-                    <h3>Recommended Songs:</h3>
-                    <ul>
-                        {% for song in recommendations %}
-                            <li>
-                                <strong>{{ song['name'] }}</strong> by {{ song['artist'] }}<br>
-                                <small>Similarity: {{ song['similarity'] | round(2) }}</small>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-        {% endif %}
+        </div>
+        {% endfor %}
     </div>
+    {% endif %}
 </body>
 </html>
