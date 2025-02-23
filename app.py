@@ -149,12 +149,14 @@ def recommend():
         
         # Sort by similarity
         recommendations.sort(key=lambda x: x["similarity"], reverse=True)
-        return render_template("recommend.html", recommendations=recommendations[:5], logged_in=True)
+        
+        # Render index.html with recommendations
+        return render_template("index.html", recommendations=recommendations[:5], logged_in=True)
     
     except spotipy.exceptions.SpotifyException as e:
         print(f"Spotify API Error: {e}")
         return f"Spotify API Error: {e}", 403
-    
+        
 # Run the app
 if __name__ == "__main__":
     app.run(debug=True)

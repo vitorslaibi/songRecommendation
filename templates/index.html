@@ -54,6 +54,9 @@
         .track-info {
             font-weight: bold;
         }
+        .recommendations {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -91,6 +94,21 @@
                 <input type="text" id="track_id" name="track_id" required>
                 <button type="submit" class="btn">Recommend</button>
             </form>
+            
+            <!-- Display Recommendations -->
+            {% if recommendations %}
+                <div class="recommendations">
+                    <h3>Recommended Songs:</h3>
+                    <ul>
+                        {% for song in recommendations %}
+                            <li>
+                                <strong>{{ song['name'] }}</strong> by {{ song['artist'] }}<br>
+                                <small>Similarity: {{ song['similarity'] | round(2) }}</small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
         {% endif %}
     </div>
 </body>
