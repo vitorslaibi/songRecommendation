@@ -1,52 +1,68 @@
-# app.py
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy.oauth2 import SpotifyOAuth
+import os
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'  # Replace with a secure secret key
 
-# Spotify API credentials (replace with your own)
-SPOTIPY_CLIENT_ID = '06aed9b7e2d643528ab2098e1fdfbc83'
+# Spotify API credentials
+SPOTIPY_CLIENT_ID = 'your_c06aed9b7e2d643528ab2098e1fdfbc83lient_id'
 SPOTIPY_CLIENT_SECRET = '65f60096ce6a49c88490b3de1a28f75b'
+SPOTIPY_REDIRECT_URI = 'http://localhost:5000/callback'
+SCOPE = 'user-library-read playlist-modify-public user-top-read'
 
-# Initialize Spotipy client
-sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(
+# Initialize Spotify client
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
     client_id=SPOTIPY_CLIENT_ID,
-    client_secret=SPOTIPY_CLIENT_SECRET
+    client_secret=SPOTIPY_CLIENT_SECRET,
+    redirect_uri=SPOTIPY_REDIRECT_URI,
+    scope=SCOPE
 ))
 
 @app.route('/')
-def home():
-    return render_template('index.html')
+def index():
+    # Check if user is authenticated
+    if not session.get('token_info'):
+        return render_template('index.html', authenticated=False)
+    
+    try:
+        # Get user's top tracks
+        top_tracks = sp.current_user_top_tracks(limit=5, offset=0, time_range='medium_term')
+        
+        # Get recommendations based on top tracks
+        seed_tracks = [track['id'] for track in top_tracks['items']]
+        recommendations = sp.recommendations(seed_tracks=seed_tracks[:5], limit=10)
+        
+        return render_template(
+            'index.html',
+            authenticated=True,
+            top_tracks=top_tracks['items'],
+            recommendations=recommendations['tracks']
+        )
+    except Exception as e:
+        print(f"Error: {e}")
+        return render_template('index.html', authenticated=False, error=str(e))
 
-@app.route('/recommend', methods=['POST'])
-def recommend():
-    # Get the song name from the form
-    song_name = request.form['song_name']
+@app.route('/login')
+def login():
+    # Clear any existing session
+    session.clear()
+    # Get auth URL
+    auth_url = sp.auth_manager.get_authorize_url()
+    return redirect(auth_url)
 
-    # Search for the song on Spotify
-    results = sp.search(q=song_name, limit=1, type='track')
-    if not results['tracks']['items']:
-        return "No results found. Please try again."
+@app.route('/callback')
+def callback():
+    # Get token info from callback
+    token_info = sp.auth_manager.get_access_token(request.args['code'])
+    session['token_info'] = token_info
+    return redirect(url_for('index'))
 
-    # Get the track ID of the first result
-    track_id = results['tracks']['items'][0]['id']
-
-    # Get recommendations based on the track
-    recommendations = sp.recommendations(seed_tracks=[track_id], limit=5)
-
-    # Extract recommended tracks
-    recommended_tracks = []
-    for track in recommendations['tracks']:
-        track_info = {
-            'name': track['name'],
-            'artist': track['artists'][0]['name'],
-            'album': track['album']['name'],
-            'preview_url': track['preview_url']
-        }
-        recommended_tracks.append(track_info)
-
-    return render_template('index.html', recommendations=recommended_tracks)
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,83 +1,71 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify Song Recommender</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        h1 {
-            color: #1DB954;
-        }
-        form {
-            margin-bottom: 20px;
-        }
-        input[type="text"] {
-            padding: 10px;
-            width: 300px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        input[type="submit"] {
-            padding: 10px 20px;
-            background-color: #1DB954;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .recommendations {
-            margin-top: 20px;
-        }
-        .track {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .track h3 {
-            margin: 0;
-            color: #1DB954;
-        }
-        .track p {
-            margin: 5px 0;
-        }
-        .track a {
-            color: #1DB954;
-            text-decoration: none;
-        }
-        .track a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <title>Spotify Recommendation System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Spotify Song Recommender</h1>
-    <form action="/recommend" method="POST">
-        <input type="text" name="song_name" placeholder="Enter a song name" required>
-        <input type="submit" value="Get Recommendations">
-    </form>
-
-    {% if recommendations %}
-    <div class="recommendations">
-        <h2>Recommended Songs:</h2>
-        {% for track in recommendations %}
-        <div class="track">
-            <h3>{{ track.name }}</h3>
-            <p><strong>Artist:</strong> {{ track.artist }}</p>
-            <p><strong>Album:</strong> {{ track.album }}</p>
-            {% if track.preview_url %}
-            <p><a href="{{ track.preview_url }}" target="_blank">Preview Song</a></p>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-green-600 mb-4">Spotify Song Recommendations</h1>
+            {% if not authenticated %}
+            <a href="{{ url_for('login') }}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                Login with Spotify
+            </a>
             {% else %}
-            <p>No preview available</p>
+            <a href="{{ url_for('logout') }}" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                Logout
+            </a>
             {% endif %}
+        </header>
+
+        {% if authenticated %}
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Top Tracks Section -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-2xl font-bold mb-4">Your Top Tracks</h2>
+                <div class="space-y-4">
+                    {% for track in top_tracks %}
+                    <div class="flex items-center space-x-4">
+                        {% if track.album.images %}
+                        <img src="{{ track.album.images[-1].url }}" alt="{{ track.name }}" class="w-12 h-12 rounded">
+                        {% endif %}
+                        <div>
+                            <p class="font-semibold">{{ track.name }}</p>
+                            <p class="text-gray-600">{{ track.artists[0].name }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recommendations Section -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-2xl font-bold mb-4">Recommended Tracks</h2>
+                <div class="space-y-4">
+                    {% for track in recommendations %}
+                    <div class="flex items-center space-x-4">
+                        {% if track.album.images %}
+                        <img src="{{ track.album.images[-1].url }}" alt="{{ track.name }}" class="w-12 h-12 rounded">
+                        {% endif %}
+                        <div>
+                            <p class="font-semibold">{{ track.name }}</p>
+                            <p class="text-gray-600">{{ track.artists[0].name }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
-        {% endfor %}
+        {% endif %}
+
+        {% if error %}
+        <div class="mt-8 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </body>
 </html>
